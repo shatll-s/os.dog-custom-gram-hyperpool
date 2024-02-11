@@ -43,7 +43,7 @@ stats_template=`curl --connect-timeout 2 --max-time $API_TIMEOUT --silent --nopr
 algo="SHA256"
 miner="hyperpool"
 ver="3.0.3"
-
+hashrateMultiplier=1000
 data=$(
 		jq -n \
 		--arg algo "$algo" \
@@ -63,13 +63,13 @@ if [[ `echo $stats_template | jq -r '.miner_uptime'` != null ]]; then
 fi
 
 if [[ `echo $stats_template | jq -r '.miner_uptime'` != null ]]; then
-  total_hr=`echo $stats_template | jq -r '.total_hashrate'`
+  total_hr_raw=`echo $stats_template | jq -r '.total_hashrate'`
+  total_hr=`echo "$total_hr * $hashrateMultiplier / 1" | bc -l`
   data=`jq ". += {\"total_hr\": \"$total_hr\"}" <<< "$data"`
 fi
 
 if [[ `echo $stats_template | jq -r '.gpus'` != null ]]; then
-  x=1000
-  hr=`echo $stats_template | jq "[.gpus[].hashrate | . * $x]"`
+  hr=`echo $stats_template | jq "[.gpus[].hashrate | . * $hashrateMultiplier]"`
   data=`jq ". += {\"hr\": $hr}" <<< "$data"`
 
   platform0_busids=`cat /run/dog/gpuStats | jq '[[.gpu[] | select(.brand == "N")] | .[].b]'`
