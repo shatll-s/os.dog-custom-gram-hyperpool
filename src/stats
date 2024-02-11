@@ -64,7 +64,7 @@ fi
 
 if [[ `echo $stats_template | jq -r '.miner_uptime'` != null ]]; then
   total_hr_raw=`echo $stats_template | jq -r '.total_hashrate'`
-  total_hr=`echo "$total_hr * $hashrateMultiplier / 1" | bc -l`
+  total_hr=`echo "$total_hr_raw * $hashrateMultiplier / 1" | bc -l`
   data=`jq ". += {\"total_hr\": \"$total_hr\"}" <<< "$data"`
 fi
 
